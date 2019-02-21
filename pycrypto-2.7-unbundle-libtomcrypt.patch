@@ -1,0 +1,57 @@
+diff -ruN orig/pct-speedtest.py new/pct-speedtest.py
+--- orig/pct-speedtest.py	2014-06-23 01:12:24.000000000 -0600
++++ new/pct-speedtest.py	2019-02-20 15:17:16.117602332 -0600
+@@ -311,9 +311,9 @@
+ 
+     def run(self):
+         pubkey_specs = [
+-            ("RSA(1024)", RSA, int(1024/8)),
+-            ("RSA(2048)", RSA, int(2048/8)),
+-            ("RSA(4096)", RSA, int(4096/8)),
++            ("RSA(1024)", RSA, 1024//8),
++            ("RSA(2048)", RSA, 2048//8),
++            ("RSA(4096)", RSA, 4096//8),
+             ]
+         block_specs = [
+             ("DES", DES, 8),
+diff -ruN orig/setup.py new/setup.py
+--- orig/setup.py	2014-06-23 01:12:24.000000000 -0600
++++ new/setup.py	2019-02-20 15:13:29.865283321 -0600
+@@ -416,7 +416,7 @@
+             # _fastmath (uses GNU mp library)
+             Extension("Crypto.PublicKey._fastmath",
+                       include_dirs=['src/'],
+-                      libraries=['gmp'],
++                      libraries=['gmp','m'],
+                       sources=["src/_fastmath.c"]),
+ 
+             # Hash functions
+@@ -460,10 +460,12 @@
+                       include_dirs=['src/'],
+                       sources=["src/CAST.c"]),
+             Extension("Crypto.Cipher._DES",
+-                      include_dirs=['src/', 'src/libtom/'],
++                      include_dirs=['src/'],
++                      libraries=['tomcrypt'],
+                       sources=["src/DES.c"]),
+             Extension("Crypto.Cipher._DES3",
+-                      include_dirs=['src/', 'src/libtom/'],
++                      include_dirs=['src/'],
++                      libraries=['tomcrypt'],
+                       sources=["src/DES3.c"]),
+ 
+             # Stream ciphers
+diff -ruN orig/src/DES.c new/src/DES.c
+--- orig/src/DES.c	2014-06-23 01:12:24.000000000 -0600
++++ new/src/DES.c	2019-02-20 14:50:11.611939867 -0600
+@@ -30,8 +30,8 @@
+  * assert-like LTC_ARGCHK macro fails. */
+ #define ARGTYPE 4
+ 
+-/* Include the actial DES implementation */
+-#include "libtom/tomcrypt_des.c"
++/* Access the actual DES implementation */
++#include "tomcrypt.h"
+ 
+ #include <assert.h>
+ 
